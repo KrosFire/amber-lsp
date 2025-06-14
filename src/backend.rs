@@ -124,11 +124,11 @@ impl Backend {
 
         let diagnostics = errors
             .iter()
-            .map(|(msg, span)| {
+            .map(|(msg, span, severity)| {
                 let start_position = self.offset_to_position(span.start, &rope);
                 let end_position = self.offset_to_position(span.end, &rope);
 
-                Diagnostic::new_simple(Range::new(start_position, end_position), msg.to_string())
+                Diagnostic::new(Range::new(start_position, end_position), *severity, None, None, msg.to_string(), None, None)
             })
             .collect::<Vec<_>>();
 
@@ -172,7 +172,7 @@ impl Backend {
             (file_id, version),
             errors
                 .iter()
-                .map(|err| (err.to_string(), *err.span()))
+                .map(|err| (err.to_string(), *err.span(), None))
                 .collect(),
         );
         self.files.ast_map.insert((file_id, version), ast.clone());

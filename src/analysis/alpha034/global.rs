@@ -1,3 +1,5 @@
+use tower_lsp::lsp_types::*;
+
 use crate::{
     analysis::{
         self, import_symbol, insert_symbol_definition, map_import_path,
@@ -124,6 +126,7 @@ pub async fn analyze_global_stmnt(
                                     return_type, ty
                                 ),
                                 *ty_span,
+                                Some(DiagnosticSeverity::WARNING),
                             );
                         }
 
@@ -231,6 +234,7 @@ pub async fn analyze_global_stmnt(
                         &(file_id, file_version),
                         "File doesn't exist",
                         *path_span,
+                        Some(DiagnosticSeverity::ERROR),
                     );
 
                     continue;
@@ -243,6 +247,7 @@ pub async fn analyze_global_stmnt(
                         &(file_id, file_version),
                         "Circular dependency",
                         *path_span,
+                        Some(DiagnosticSeverity::ERROR),
                     );
 
                     continue;
@@ -273,6 +278,7 @@ pub async fn analyze_global_stmnt(
                                     &(file_id, file_version),
                                     &format!("Duplicate import '{}'", ident),
                                     *span,
+                                    Some(DiagnosticSeverity::ERROR),
                                 );
 
                                 let mut symbol_table = backend
@@ -345,6 +351,7 @@ pub async fn analyze_global_stmnt(
                                         &(file_id, file_version),
                                         &format!("Could not resolve '{}'", ident),
                                         *span,
+                                        Some(DiagnosticSeverity::ERROR),
                                     );
 
                                     let mut symbol_table = backend
