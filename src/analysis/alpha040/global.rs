@@ -222,7 +222,7 @@ pub async fn analyze_global_stmnt(
                                     inferred_return_type, ty
                                 ),
                                 *ty_span,
-                                Some(DiagnosticSeverity::WARNING),
+                                Some(DiagnosticSeverity::ERROR),
                             );
                         }
 
