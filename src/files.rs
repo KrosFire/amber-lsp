@@ -3,13 +3,13 @@ use std::sync::Arc;
 use chumsky::span::SimpleSpan;
 use ropey::Rope;
 use tokio::sync::RwLock;
-use tower_lsp::lsp_types::Url;
+use tower_lsp::lsp_types::{DiagnosticSeverity, Url};
 use tracing::info;
 
 use crate::{
     analysis::{types::GenericsMap, SymbolTable},
     fs::FS,
-    grammar::{Grammar, Spanned, SpannedSemanticToken},
+    grammar::{Grammar, SeveritySpanned, SpannedSemanticToken},
     paths::{FileId, PathInterner},
     utils::FastDashMap,
 };
@@ -41,7 +41,7 @@ pub struct Files {
     pub analyze_lock: FastDashMap<(FileId, FileVersion), Arc<RwLock<bool>>>,
     pub fs: Arc<dyn FS>,
     pub ast_map: FastDashMap<(FileId, FileVersion), Grammar>,
-    pub errors: FastDashMap<(FileId, FileVersion), Vec<Spanned<String>>>,
+    pub errors: FastDashMap<(FileId, FileVersion), Vec<SeveritySpanned<String>>>,
     pub document_map: FastDashMap<(FileId, FileVersion), Rope>,
     pub semantic_token_map: FastDashMap<(FileId, FileVersion), Vec<SpannedSemanticToken>>,
     pub symbol_table: FastDashMap<(FileId, FileVersion), SymbolTable>,
@@ -116,12 +116,12 @@ impl Files {
             .map(|document| (document.clone(), file_version))
     }
 
-    pub fn report_error(&self, file: &(FileId, FileVersion), msg: &str, span: SimpleSpan) {
+    pub fn report_error(&self, file: &(FileId, FileVersion), msg: &str, span: SimpleSpan, severity: Option<DiagnosticSeverity>) {
         let mut errors = match self.errors.get(file) {
             Some(errors) => errors.clone(),
             None => vec![],
         };
-        errors.push((msg.to_string(), span));
+        errors.push((msg.to_string(), span, severity));
         self.errors.insert(*file, errors);
     }
 

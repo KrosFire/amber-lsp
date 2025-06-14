@@ -1,6 +1,7 @@
 use std::vec;
 
 use chumsky::span::SimpleSpan;
+use tower_lsp::lsp_types::DiagnosticSeverity;
 use tracing::info;
 
 use crate::{
@@ -143,12 +144,12 @@ pub fn analyze_exp(
                     .map(|(arg, _)| (arg.data_type.clone(), arg.is_optional, arg.is_ref))
                     .collect::<Vec<(DataType, bool, bool)>>(),
                 Some(_) => {
-                    files.report_error(&file, &format!("{} is not a function", name), *name_span);
+                    files.report_error(&file, &format!("{} is not a function", name), *name_span, Some(DiagnosticSeverity::ERROR));
 
                     vec![]
                 }
                 None => {
-                    files.report_error(&file, &format!("{} is not defined", name), *name_span);
+                    files.report_error(&file, &format!("{} is not defined", name), *name_span, Some(DiagnosticSeverity::ERROR));
 
                     vec![]
                 }
@@ -181,6 +182,7 @@ pub fn analyze_exp(
                                             &file,
                                             "Cannot modify a constant variable",
                                             span,
+                                            Some(DiagnosticSeverity::ERROR),
                                         );
                                     }
                                 }
@@ -191,6 +193,7 @@ pub fn analyze_exp(
                                 &file,
                                 "Cannot pass a non-variable as a reference",
                                 arg.1,
+                                Some(DiagnosticSeverity::ERROR),
                             );
                         }
                         _ => {}
@@ -207,6 +210,7 @@ pub fn analyze_exp(
                         &file,
                         &format!("Function takes only {} arguments", expected_types.len()),
                         arg.1,
+                        Some(DiagnosticSeverity::ERROR),
                     );
                 }
             });
@@ -221,6 +225,7 @@ pub fn analyze_exp(
                     &file,
                     &format!("Function takes {} arguments", expected_types.len()),
                     *name_span,
+                    Some(DiagnosticSeverity::ERROR),
                 );
             };
 
@@ -320,6 +325,7 @@ pub fn analyze_exp(
                     &file,
                     "Failable function must be handled with a failure handler or marked with `trust` modifier",
                     *name_span,
+                    Some(DiagnosticSeverity::ERROR),
                 );
             }
 
@@ -396,6 +402,7 @@ pub fn analyze_exp(
                         ty.to_string(scoped_generic_types),
                     ),
                     exp1.1,
+                    Some(DiagnosticSeverity::ERROR),
                 );
             }
 
@@ -468,6 +475,7 @@ pub fn analyze_exp(
                     &file,
                     "Array must have elements of the same type",
                     *exp_span,
+                    Some(DiagnosticSeverity::ERROR),
                 );
             }
 
@@ -538,7 +546,7 @@ pub fn analyze_exp(
                 }),
                 _ => false,
             }) {
-                files.report_error(&file, "Command must have a failure handler", *exp_span);
+                files.report_error(&file, "Command must have a failure handler", *exp_span, Some(DiagnosticSeverity::ERROR));
             }
 
             DataType::Text
@@ -1164,6 +1172,7 @@ pub fn analyze_exp(
                 ty.to_string(scoped_generic_types)
             ),
             *exp_span,
+            Some(DiagnosticSeverity::ERROR),
         );
     } else if let DataType::Generic(id) = ty {
         scoped_generic_types.constrain_generic_type(id, expected_type.clone());
