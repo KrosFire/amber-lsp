@@ -1,5 +1,3 @@
-use tower_lsp::lsp_types::*;
-
 use crate::{
     analysis::{
         get_symbol_definition_info, insert_symbol_definition, insert_symbol_reference,
@@ -472,7 +470,6 @@ pub fn analyze_stmnt(
                     &file,
                     "Fail statements can only be used inside of functions or the main block",
                     *span,
-                    Some(DiagnosticSeverity::ERROR),
                 );
             }
 
@@ -500,7 +497,7 @@ pub fn analyze_stmnt(
         }
         Statement::Return(_, exp) => {
             if !contexts.iter().any(|c| matches!(c, Context::Function(_))) {
-                files.report_error(&file, "Return statement outside of function", *span, Some(DiagnosticSeverity::ERROR));
+                files.report_error(&file, "Return statement outside of function", *span);
             }
 
             if let Some(exp) = exp {
@@ -567,7 +564,6 @@ pub fn analyze_stmnt(
                         var_ty.to_string(scoped_generic_types)
                     ),
                     *var_span,
-                    Some(DiagnosticSeverity::ERROR),
                 );
             }
 
@@ -602,7 +598,6 @@ pub fn analyze_stmnt(
                         var_ty.to_string(scoped_generic_types)
                     ),
                     *var_span,
-                    Some(DiagnosticSeverity::ERROR),
                 );
             }
 
@@ -647,7 +642,6 @@ pub fn analyze_stmnt(
                         var_ty.to_string(scoped_generic_types)
                     ),
                     *var_span,
-                    Some(DiagnosticSeverity::ERROR),
                 );
             }
 
@@ -692,7 +686,6 @@ pub fn analyze_stmnt(
                         var_ty.to_string(scoped_generic_types)
                     ),
                     *var_span,
-                    Some(DiagnosticSeverity::ERROR),
                 );
             }
 
@@ -737,7 +730,6 @@ pub fn analyze_stmnt(
                         var_ty.to_string(scoped_generic_types)
                     ),
                     *var_span,
-                    Some(DiagnosticSeverity::ERROR),
                 );
             }
 
@@ -803,7 +795,7 @@ pub fn analyze_stmnt(
         }
         Statement::Break => {
             if !contexts.iter().any(|c| matches!(c, Context::Loop)) {
-                files.report_error(&file, "Break statement outside of loop", *span, Some(DiagnosticSeverity::ERROR));
+                files.report_error(&file, "Break statement outside of loop", *span);
             }
 
             StmntAnalysisResult {
@@ -813,7 +805,7 @@ pub fn analyze_stmnt(
         }
         Statement::Continue => {
             if !contexts.iter().any(|c| matches!(c, Context::Loop)) {
-                files.report_error(&file, "Continue statement outside of loop", *span, Some(DiagnosticSeverity::ERROR));
+                files.report_error(&file, "Continue statement outside of loop", *span);
             }
 
             StmntAnalysisResult {
@@ -872,7 +864,7 @@ pub fn analyze_stmnt(
                 .iter()
                 .any(|(modifier, _)| *modifier == CommandModifier::Unsafe)
             {
-                files.report_error(&file, "Command must have a failure handler", *span, Some(DiagnosticSeverity::ERROR));
+                files.report_error(&file, "Command must have a failure handler", *span);
             }
 
             get_stmnt_analysis_result(vec![], vec![exp1, exp2])
@@ -997,7 +989,6 @@ pub fn analyze_failure_handler(
                     &(file_id, file_version),
                     "Propagate can only be used inside of main block or function",
                     *span,
-                    Some(DiagnosticSeverity::ERROR),
                 );
             }
 

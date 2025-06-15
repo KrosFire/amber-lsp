@@ -1,6 +1,5 @@
 use chumsky::{error::Rich, span::SimpleSpan};
 use std::fmt::{self, Debug, Display};
-use tower_lsp::lsp_types::DiagnosticSeverity;
 
 pub mod alpha034;
 pub mod alpha035;
@@ -15,7 +14,6 @@ pub enum Grammar {
 
 pub type Span = SimpleSpan;
 pub type Spanned<T> = (T, Span);
-pub type SeveritySpanned<T> = (T, SimpleSpan, Option<DiagnosticSeverity>);
 pub type SpannedSemanticToken = Spanned<usize>;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]

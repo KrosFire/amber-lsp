@@ -1,6 +1,6 @@
 use rangemap::RangeInclusiveMap;
 use std::{collections::HashMap, ops::RangeInclusive};
-use tower_lsp::lsp_types::{DiagnosticSeverity, Url};
+use tower_lsp::lsp_types::Url;
 use types::{DataType, GenericsMap};
 
 use crate::{
@@ -372,7 +372,6 @@ pub fn insert_symbol_reference(
                 &reference_location.file,
                 &format!("\"{}\" is not defined", symbol),
                 (reference_location.start..reference_location.end).into(),
-                Some(DiagnosticSeverity::ERROR),
             );
 
             let mut current_file_symbol_table =
