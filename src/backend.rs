@@ -128,7 +128,33 @@ impl Backend {
                 let start_position = self.offset_to_position(span.start, &rope);
                 let end_position = self.offset_to_position(span.end, &rope);
 
-                Diagnostic::new_simple(Range::new(start_position, end_position), msg.to_string())
+                Diagnostic::new(Range::new(start_position, end_position), Some(DiagnosticSeverity::ERROR), None, None, msg.to_string(), None, None)
+            })
+            .collect::<Vec<_>>();
+
+        self.publish_diagnostics(&file_id, diagnostics, Some(version))
+            .await;
+    }
+
+    #[tracing::instrument(skip_all)]
+    pub async fn publish_syntax_warnings(&self, file_id: FileId, file_version: FileVersion) {
+        let warnings = match self.files.warnings.get(&(file_id, file_version)) {
+            Some(warnings) => warnings.clone(),
+            None => return,
+        };
+
+        let (rope, version) = match self.files.get_document_latest_version(file_id) {
+            Some(document) => document,
+            None => return,
+        };
+
+        let diagnostics = warnings
+            .iter()
+            .map(|(msg, span)| {
+                let start_position = self.offset_to_position(span.start, &rope);
+                let end_position = self.offset_to_position(span.end, &rope);
+
+                Diagnostic::new(Range::new(start_position, end_position), DiagnosticSeverity::WARNING, None, None, msg.to_string(), None, None)
             })
             .collect::<Vec<_>>();
 

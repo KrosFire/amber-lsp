@@ -42,6 +42,7 @@ pub struct Files {
     pub fs: Arc<dyn FS>,
     pub ast_map: FastDashMap<(FileId, FileVersion), Grammar>,
     pub errors: FastDashMap<(FileId, FileVersion), Vec<Spanned<String>>>,
+    pub warnings: FastDashMap<(FileId, FileVersion), Vec<Spanned<String>>>,
     pub document_map: FastDashMap<(FileId, FileVersion), Rope>,
     pub semantic_token_map: FastDashMap<(FileId, FileVersion), Vec<SpannedSemanticToken>>,
     pub symbol_table: FastDashMap<(FileId, FileVersion), SymbolTable>,
@@ -59,6 +60,7 @@ impl Files {
             file_dependencies: FastDashMap::default(),
             ast_map: FastDashMap::default(),
             errors: FastDashMap::default(),
+            warnings: FastDashMap::default(),
             document_map: FastDashMap::default(),
             semantic_token_map: FastDashMap::default(),
             symbol_table: FastDashMap::default(),
@@ -97,6 +99,7 @@ impl Files {
     fn remove_file_version(&self, file_id: FileId, version: FileVersion) {
         self.ast_map.remove(&(file_id, version));
         self.errors.remove(&(file_id, version));
+        self.warnings.remove(&(file_id, version));
         self.document_map.remove(&(file_id, version));
         self.semantic_token_map.remove(&(file_id, version));
         self.symbol_table.remove(&(file_id, version));
@@ -123,6 +126,15 @@ impl Files {
         };
         errors.push((msg.to_string(), span));
         self.errors.insert(*file, errors);
+    }
+
+    pub fn report_warning(&self, file: &(FileId, FileVersion), msg: &str, span: SimpleSpan) {
+        let mut warnings = match self.warnings.get(file) {
+            Some(warnings) => warnings.clone(),
+            None => vec![],
+        };
+        warnings.push((msg.to_string(), span));
+        self.warnings.insert(*file, warnings);
     }
 
     #[tracing::instrument(skip_all)]
