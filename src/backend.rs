@@ -154,7 +154,7 @@ impl Backend {
                 let start_position = self.offset_to_position(span.start, &rope);
                 let end_position = self.offset_to_position(span.end, &rope);
 
-                Diagnostic::new(Range::new(start_position, end_position), *severity, None, None, msg.to_string(), None, None)
+                Diagnostic::new(Range::new(start_position, end_position), DiagnosticSeverity::WARNING, None, None, msg.to_string(), None, None)
             })
             .collect::<Vec<_>>();
 
